@@ -1,4 +1,5 @@
-import { positive, rate, finiteResult, CalculationError } from './validation';
+import { simulateCompounding } from './compounding';
+import { positive, rate, CalculationError } from './validation';
 export function calculateInvestmentGrowth(
   initial: number,
   monthly: number,
@@ -18,34 +19,24 @@ export function calculateInvestmentGrowth(
   const months = Math.round(years * 12);
   if (months < 1)
     throw new CalculationError('Duration must be at least one month.');
-  const monthlyRate = Math.pow(1 + annualReturn / 100, 1 / 12) - 1;
-  let balance = initial;
-  const projection: {
-    year: number;
-    contribution: number;
-    value: number;
-    growth: number;
-  }[] = [];
-  for (let month = 1; month <= months; month++) {
-    // Contributions arrive at the end of each month; the return is an effective annual rate.
-    balance = balance * (1 + monthlyRate) + monthly;
-    if (month % 12 === 0 || month === months) {
-      const contribution = initial + monthly * month;
-      projection.push({
-        year: month / 12,
-        contribution,
-        value: balance,
-        growth: balance - contribution,
-      });
-    }
-  }
-  const contribution = initial + monthly * months;
-  return finiteResult({
-    contribution,
-    growth: balance - contribution,
-    finalValue: balance,
-    multiple: balance / contribution,
-    months,
-    projection,
+  const result = simulateCompounding({
+    monthlyContribution: monthly,
+    initialLumpSum: initial,
+    durationMonths: months,
+    annualReturnRate: annualReturn,
+    contributionTiming: 'end',
   });
+  return {
+    contribution: result.totalContributions,
+    growth: result.totalGrowth,
+    finalValue: result.finalValue,
+    multiple: result.wealthMultiple,
+    months,
+    projection: result.yearlyBreakdown.map((row) => ({
+      year: row.elapsedMonths / 12,
+      contribution: row.totalContributed,
+      value: row.endingValue,
+      growth: row.totalGrowth,
+    })),
+  };
 }

@@ -21,8 +21,8 @@ import { Icon } from '../../shared/components/icon';
       <div class="eyebrow">THE RIGHT TOOL FOR YOUR NEXT QUESTION</div>
       <h1>A little math. A clearer picture.</h1>
       <p>
-        16 focused calculators to understand your investments, explore scenarios
-        and make the numbers clear.
+        {{ calculatorCount }} focused calculators to understand your
+        investments, explore scenarios and make the numbers clear.
       </p>
     </header>
     <div class="directory-search input-wrap">
@@ -51,7 +51,7 @@ import { Icon } from '../../shared/components/icon';
         [attr.aria-pressed]="category() === 'All'"
         (click)="category.set('All')"
       >
-        All calculators <span>16</span>
+        All calculators <span>{{ calculatorCount }}</span>
       </button>
       @for (c of categories; track c) {
         <button
@@ -146,6 +146,7 @@ import { Icon } from '../../shared/components/icon';
   `,
 })
 export class CalculatorDirectory {
+  readonly calculatorCount = CALCULATORS.length;
   readonly query = signal('');
   readonly category = signal<CalculatorCategory | 'All'>('All');
   readonly categories = CATEGORIES;

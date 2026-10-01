@@ -1,3 +1,4 @@
+import { SIP_CONFIG } from './sip/sip-config';
 export interface FieldDefinition {
   readonly key: string;
   readonly label: string;
@@ -40,6 +41,7 @@ const mode = (
   example: Record<string, number>,
 ): CalculatorMode => ({ id, label, fields, example });
 export const CONFIGS: Readonly<Record<string, CalculatorConfig>> = {
+  sip: SIP_CONFIG,
   'average-down': {
     position: true,
     modes: [

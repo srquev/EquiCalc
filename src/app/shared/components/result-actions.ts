@@ -101,6 +101,11 @@ export class ResultActions {
         (m) => `${m.label}: ${this.format.format(m.value, m.format, false)}`,
       ),
       '',
+      ...(s.calculatorId === 'sip'
+        ? [
+            'Projection based on entered assumptions. Returns are not guaranteed.',
+          ]
+        : []),
       'Mathematical illustration, not investment advice.',
     ].join('\n');
   }

@@ -10,7 +10,7 @@ export class FavouritesStore {
       [],
       (v): v is string[] =>
         Array.isArray(v) &&
-        v.length <= 16 &&
+        v.length <= CALCULATORS.length &&
         v.every((id) => typeof id === 'string' && !!getCalculator(id)),
     ),
   );

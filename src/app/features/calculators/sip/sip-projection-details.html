@@ -1,0 +1,138 @@
+@let p = projection();
+<section
+  class="panel supplement composition"
+  aria-labelledby="composition-title"
+>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">THE TWO PARTS OF YOUR PROJECTION</span>
+      <h2 id="composition-title">What you put in. What could grow.</h2>
+      <p>
+        Contributions and estimated {{ loss() ? "decrease" : "growth" }}, shown
+        separately.
+      </p>
+    </div>
+  </div>
+  <div class="corpus-caption">
+    <span>Estimated final value</span
+    ><strong>{{ p.finalValue | metric: "currency" }}</strong>
+  </div>
+  <div class="composition-bar" aria-hidden="true">
+    <span class="contribution-segment" [style.width.%]="firstSegment()"></span
+    ><span
+      class="growth-segment"
+      [class.loss-segment]="loss()"
+      [style.width.%]="100 - firstSegment()"
+    ></span>
+  </div>
+  <div class="composition-legend">
+    <div>
+      <span class="legend-label"
+        ><i class="legend-square contributions"></i>Total contributions</span
+      ><strong>{{ p.totalContributions | metric: "currency" }}</strong>
+    </div>
+    <div>
+      <span class="legend-label"
+        ><i class="legend-square growth" [class.loss-segment]="loss()"></i
+        >Estimated {{ loss() ? "decrease" : "growth" }}</span
+      ><strong [class.negative]="loss()">{{
+        p.totalGrowth | metric: "currency"
+      }}</strong>
+    </div>
+  </div>
+  @if (loss()) {
+    <p class="table-note">
+      With a negative assumed return, the bar shows remaining value and the
+      projected decrease relative to your contributions.
+    </p>
+  }
+</section>
+@if (calculation().input.stepUpRate && p.startingMonthlyContribution > 0) {
+  <section class="panel supplement">
+    <div class="section-heading">
+      <div>
+        <h2>Your SIP journey</h2>
+        <p>Your monthly contribution at the start of selected years.</p>
+      </div>
+      <span class="category-label"
+        >{{
+          calculation().input.stepUpIntervalMonths === 6
+            ? "EVERY 6 MONTHS"
+            : "ANNUAL"
+        }}
+        INCREASE</span
+      >
+    </div>
+    <div class="journey-grid">
+      @for (year of journey(); track year.year) {
+        <div>
+          <span>Year {{ year.year }}</span
+          ><strong>{{
+            year.startingMonthlyContribution | metric: "currency"
+          }}</strong
+          ><small>per month at year start</small>
+        </div>
+      }
+    </div>
+    @if (calculation().input.maximumMonthlyContribution; as cap) {
+      <p class="table-note">
+        Monthly contributions never exceed the entered cap of
+        {{ cap | metric: "currency" }}.
+      </p>
+    }
+  </section>
+}
+<section class="panel supplement">
+  <div class="section-heading">
+    <div>
+      <h2>A year-by-year view.</h2>
+      <p>Each row comes from the same month-by-month projection.</p>
+    </div>
+    <span class="category-label">{{ p.totalMonths }} MONTHS</span>
+  </div>
+  <div
+    class="table-wrap"
+    tabindex="0"
+    role="region"
+    aria-label="Year-by-year SIP projection"
+  >
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Year</th>
+          <th scope="col">Monthly SIP at period end</th>
+          <th scope="col">SIP added this period</th>
+          <th scope="col">Total contributions</th>
+          <th scope="col">Total estimated growth</th>
+          <th scope="col">Estimated value</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of p.yearlyBreakdown; track row.year) {
+          <tr [class.highlight]="$last">
+            <th scope="row">
+              {{ row.year }}
+              @if (row.monthsInPeriod !== 12) {
+                <small> ({{ row.monthsInPeriod }} months)</small>
+              }
+            </th>
+            <td>{{ row.monthlyContribution | metric: "currency" }}</td>
+            <td>{{ row.contributedThisYear | metric: "currency" }}</td>
+            <td>{{ row.totalContributed | metric: "currency" }}</td>
+            <td [class.negative]="row.totalGrowth < 0">
+              {{ row.totalGrowth | metric: "currency" }}
+            </td>
+            <td>
+              <strong>{{ row.endingValue | metric: "currency" }}</strong>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="table-note">
+    Total contributions include any initial lump sum; “SIP added” includes only
+    monthly payments. Six-month increases can change the SIP within a year.
+    Figures are rounded for display only.
+  </p>
+</section>

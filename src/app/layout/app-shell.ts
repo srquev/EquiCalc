@@ -18,8 +18,13 @@ export class AppShell {
     {
       title: 'CALCULATORS',
       calculators: CALCULATORS.filter(
-        (c) => !['Corporate Actions', 'Valuation'].includes(c.category),
+        (c) =>
+          !['Returns', 'Corporate Actions', 'Valuation'].includes(c.category),
       ),
+    },
+    {
+      title: 'RETURNS',
+      calculators: CALCULATORS.filter((c) => c.category === 'Returns'),
     },
     {
       title: 'CORPORATE ACTIONS',

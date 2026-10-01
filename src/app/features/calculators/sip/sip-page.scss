@@ -1,0 +1,178 @@
+:host {
+  display: block;
+}
+.purpose-tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--eq-border);
+  margin: 0 0 26px;
+}
+.purpose-tabs button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 13px 0;
+  min-height: 48px;
+  font-size: 12px;
+  color: var(--eq-text-secondary);
+}
+.purpose-tabs button.active {
+  border-color: var(--eq-brand);
+  color: var(--eq-brand);
+  font-weight: 650;
+}
+.purpose-tabs eq-icon {
+  width: 17px;
+  height: 17px;
+}
+.form-intro {
+  font-size: 11px;
+  margin: 6px 0 0;
+}
+.panel-header {
+  align-items: flex-start;
+}
+.panel-header .btn {
+  flex: 0 0 auto;
+}
+.sip-main-fields {
+  display: grid;
+  gap: 23px;
+}
+.advanced-options {
+  border-top: 1px solid var(--eq-border);
+  margin-top: 26px;
+  padding-top: 16px;
+}
+.advanced-options > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--eq-brand);
+  font-size: 12px;
+  font-weight: 550;
+}
+.advanced-options > summary::-webkit-details-marker {
+  display: none;
+}
+.advanced-options > summary > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.advanced-options > summary eq-icon {
+  width: 15px;
+  height: 15px;
+  transition: transform 0.15s;
+}
+.advanced-options[open] > summary eq-icon {
+  transform: rotate(45deg);
+}
+.advanced-options summary small {
+  font-size: 9px;
+  color: var(--eq-text-muted);
+  font-weight: 400;
+}
+.advanced-group {
+  border-top: 1px solid var(--eq-border);
+  padding-top: 20px;
+  margin-top: 18px;
+}
+.advanced-group h3 {
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+.helper {
+  font-size: 10px;
+  color: var(--eq-text-muted);
+  margin: 12px 0 0;
+  line-height: 1.8;
+}
+.option-toggle {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.option-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--eq-brand);
+  flex: 0 0 auto;
+}
+.option-toggle small {
+  display: block;
+  color: var(--eq-text-muted);
+  font-size: 10px;
+  margin-top: 3px;
+  font-weight: 400;
+}
+.assumption-note {
+  display: flex;
+  gap: 8px;
+  padding: 15px 0;
+}
+.assumption-note eq-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--eq-brand);
+  margin-top: 3px;
+}
+.assumption-note p {
+  font-size: 11px;
+  line-height: 1.8;
+  margin: 0;
+}
+.assumption-note strong {
+  font-weight: 550;
+}
+.goal-met {
+  padding: 15px;
+  background: var(--eq-brand-soft);
+  border-radius: var(--eq-radius-sm);
+  color: var(--eq-brand);
+  font-size: 12px;
+  line-height: 1.8;
+}
+@media (max-width: 600px) {
+  .purpose-tabs {
+    gap: 12px;
+  }
+  .purpose-tabs button {
+    flex: 1;
+    font-size: 11px;
+    gap: 5px;
+  }
+  .purpose-tabs eq-icon {
+    width: 15px;
+    height: 15px;
+  }
+  .advanced-options summary small {
+    display: none;
+  }
+  .panel-header h2 {
+    font-size: 15px;
+  }
+}
+@media (max-width: 359px) {
+  .panel-header {
+    flex-wrap: wrap;
+  }
+  .panel-header .btn {
+    padding-left: 0;
+  }
+  .purpose-tabs button {
+    font-size: 10px;
+  }
+}

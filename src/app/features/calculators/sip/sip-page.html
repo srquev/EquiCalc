@@ -1,0 +1,342 @@
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  <a routerLink="/">Workspace</a><eq-icon name="chevron" /><a
+    routerLink="/calculators"
+    >Calculators</a
+  ><eq-icon name="chevron" /><span>SIP & Compounding</span>
+</nav>
+<header class="page-header">
+  <div class="eyebrow">
+    <eq-icon name="sprout" /> SMALL STEPS. A LONGER VIEW.
+  </div>
+  <div class="calculator-title-row">
+    <h1>SIP & Compounding Calculator</h1>
+    <button
+      class="icon-button"
+      aria-label="Favourite SIP & Compounding"
+      [attr.aria-pressed]="favourites.ids().includes('sip')"
+      [class.selected]="favourites.ids().includes('sip')"
+      (click)="favourites.toggle('sip')"
+    >
+      <eq-icon name="star" />
+    </button>
+  </div>
+  <p>
+    See how regular investments could grow over time. Explore your
+    contributions, change the assumptions, or work backwards from a goal.
+  </p>
+</header>
+<div class="purpose-tabs" aria-label="Calculator purpose">
+  <button
+    [class.active]="!isGoal()"
+    [attr.aria-pressed]="!isGoal()"
+    (click)="changePurpose(false)"
+  >
+    <eq-icon name="trend-up" />Investment projection</button
+  ><button
+    [class.active]="isGoal()"
+    [attr.aria-pressed]="isGoal()"
+    (click)="changePurpose(true)"
+  >
+    <eq-icon name="target" />Goal planner
+  </button>
+</div>
+<div class="calculator-layout sip-layout">
+  <section class="panel" aria-label="SIP inputs">
+    <div class="panel-header">
+      <div>
+        <h2>
+          {{
+            isGoal() ? "Start with a destination." : "Build on a monthly habit."
+          }}
+        </h2>
+        <p class="form-intro">
+          {{
+            isGoal()
+              ? "Find the starting SIP for your target."
+              : "Three inputs. A view of what could grow."
+          }}
+        </p>
+      </div>
+      <button class="btn subtle" (click)="example()">
+        Try example <eq-icon name="arrow" />
+      </button>
+    </div>
+    <div class="segmented" aria-label="SIP contribution style">
+      <button
+        [class.active]="!isStepUp()"
+        [attr.aria-pressed]="!isStepUp()"
+        (click)="changeStyle(false)"
+      >
+        Fixed SIP</button
+      ><button
+        [class.active]="isStepUp()"
+        [attr.aria-pressed]="isStepUp()"
+        (click)="changeStyle(true)"
+      >
+        Step-Up SIP
+      </button>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="calculate()">
+      <div class="sip-main-fields">
+        <eq-field
+          [field]="isGoal() ? fields.targetCorpus : fields.monthlyContribution"
+          [control]="control(isGoal() ? 'targetCorpus' : 'monthlyContribution')"
+          [id]="isGoal() ? 'sip-targetCorpus' : 'sip-monthlyContribution'"
+        />
+        <div class="form-grid">
+          <eq-field
+            [field]="fields.years"
+            [control]="control('years')"
+            id="sip-years"
+          /><eq-field
+            [field]="fields.annualReturnRate"
+            [control]="control('annualReturnRate')"
+            id="sip-annualReturnRate"
+          />
+        </div>
+      </div>
+      <details
+        class="advanced-options"
+        #advanced
+        [open]="advancedOpen()"
+        (toggle)="advancedOpen.set(advanced.open)"
+      >
+        <summary>
+          <span><eq-icon name="plus" />Advanced options</span
+          ><small>Make the projection yours</small>
+        </summary>
+        <div class="advanced-content">
+          @if (isStepUp()) {
+            <div class="advanced-group">
+              <h3>Let your contribution grow</h3>
+              <div class="form-grid">
+                <eq-field
+                  [field]="fields.stepUpRate"
+                  [control]="control('stepUpRate')"
+                  id="sip-stepUpRate"
+                /><eq-field
+                  [field]="fields.stepUpIntervalMonths"
+                  [control]="control('stepUpIntervalMonths')"
+                  id="sip-stepUpIntervalMonths"
+                />
+              </div>
+              <p class="helper">
+                The increase applies after each completed interval. For example,
+                10% every 6 months increases the SIP twice in a full year.
+              </p>
+            </div>
+          }
+          <div class="advanced-group">
+            <h3>Shape your investment</h3>
+            <div class="form-grid">
+              <eq-field
+                [field]="fields.initialLumpSum"
+                [control]="control('initialLumpSum')"
+                id="sip-initialLumpSum"
+              /><eq-field
+                [field]="fields.maximumMonthlyContribution"
+                [control]="control('maximumMonthlyContribution')"
+                id="sip-maximumMonthlyContribution"
+              /><eq-field
+                [field]="fields.additionalMonths"
+                [control]="control('additionalMonths')"
+                id="sip-additionalMonths"
+              /><eq-field
+                [field]="fields.contributionTiming"
+                [control]="control('contributionTiming')"
+                id="sip-contributionTiming"
+              />
+            </div>
+          </div>
+          @if (isGoal()) {
+            <div class="advanced-group">
+              <h3>Compare your current plan</h3>
+              <eq-field
+                [field]="fields.plannedMonthlyContribution"
+                [control]="control('plannedMonthlyContribution')"
+                id="sip-plannedMonthlyContribution"
+              />
+            </div>
+          }
+          <div class="advanced-group">
+            <label class="option-toggle"
+              ><input
+                #inflation
+                type="checkbox"
+                [checked]="values()['inflationEnabled'] === 1"
+                (change)="toggle('inflationEnabled', inflation.checked)"
+              /><span
+                >Adjust for inflation<small
+                  >See an equivalent in today’s money.</small
+                ></span
+              ></label
+            >
+            @if (values()["inflationEnabled"] === 1) {
+              <eq-field
+                [field]="fields.inflationRate"
+                [control]="control('inflationRate')"
+                id="sip-inflationRate"
+              />
+            }
+          </div>
+          <div class="advanced-group">
+            <label class="option-toggle"
+              ><input
+                #delay
+                type="checkbox"
+                [checked]="values()['delayEnabled'] === 1"
+                (change)="toggle('delayEnabled', delay.checked)"
+              /><span
+                >Compare a delayed start<small
+                  >Same end date, a different starting point.</small
+                ></span
+              ></label
+            >
+            @if (values()["delayEnabled"] === 1) {
+              <eq-field
+                [field]="fields.delayMonths"
+                [control]="control('delayMonths')"
+                id="sip-delayMonths"
+              />
+            }
+          </div>
+        </div>
+      </details>
+      @if (outcome().error) {
+        <div class="error-box" role="status">{{ outcome().error }}</div>
+      } @else if (attempted() && !outcome().calculation) {
+        <div class="error-box" role="status">
+          Enter {{ isGoal() ? "a target corpus" : "a monthly SIP" }}, an
+          investment period and an assumed return.
+        </div>
+      }
+      <div class="form-actions">
+        <button class="btn primary" type="submit">
+          {{ isGoal() ? "Calculate starting SIP" : "Calculate projection"
+          }}<eq-icon name="arrow" /></button
+        ><button class="btn subtle" type="button" (click)="reset()">
+          <eq-icon name="reset" />Reset
+        </button>
+      </div>
+      <p class="helper">
+        Results update automatically. Optional fields can be left blank.
+      </p>
+    </form>
+    @if (feedback()) {
+      <p class="status-message" role="status">{{ feedback() }}</p>
+    }
+  </section>
+  <div>
+    <eq-result-panel
+      [metrics]="outcome().calculation?.metrics ?? []"
+      [error]="outcome().error"
+      [secondaryLimit]="4"
+      note="Projection based on entered assumptions. Returns are not guaranteed; fees and taxes are excluded."
+    />
+    @if (outcome().calculation; as c) {
+      <eq-result-actions [snapshot]="snapshot()" />
+      <p class="helper">Your saved calculations stay in this browser.</p>
+      <div class="assumption-note">
+        <eq-icon name="info" />
+        <p>
+          Contributions at the
+          <strong
+            >{{ c.input.contributionTiming === "end" ? "end" : "beginning" }} of
+            each month.</strong
+          >
+          The annual return is converted to an effective monthly rate.
+          @if (c.goal) {
+            Displayed SIP is rounded to 2 decimals; projections use the
+            unrounded starting SIP.
+          }
+        </p>
+      </div>
+      @if (c.goal?.initialInvestmentMeetsGoal) {
+        <p class="goal-met" role="status">
+          Under these assumptions, the initial lump sum already meets the
+          target. No monthly SIP is needed for this mathematical projection.
+        </p>
+      }
+    }
+  </div>
+</div>
+@if (outcome().calculation; as c) {
+  <eq-sip-projection-details [calculation]="c" /><eq-sip-comparisons
+    [calculation]="c"
+  />
+}
+<section
+  class="panel education sip-education"
+  aria-label="SIP calculation guide"
+>
+  <details open>
+    <summary>How does SIP compounding work?</summary>
+    <p>
+      Each contribution enters at a different time. Earlier contributions have
+      longer to compound, while later contributions have less time. We project
+      one month at a time using a constant assumed return.
+    </p>
+    <p class="formula">
+      Monthly rate = (1 + annual return ÷ 100)^(1 ÷ 12) − 1<br />Beginning of
+      month: next value = (current value + SIP) × (1 + monthly rate)<br />End of
+      month: next value = current value × (1 + monthly rate) + SIP
+    </p>
+  </details>
+  <details>
+    <summary>What does a SIP step-up change?</summary>
+    <p>
+      A 10% annual increase takes a 10,000 monthly SIP to 11,000 in year 2 and
+      12,100 in year 3. The percentage changes your contribution, not your
+      investment return. Increases start after each completed interval; a
+      maximum SIP caps every subsequent contribution.
+    </p>
+  </details>
+  <details>
+    <summary>How does the goal planner work?</summary>
+    <p>
+      We search for a starting monthly SIP by repeatedly running the same
+      monthly projection. The search uses at most 60 bound-expansion steps and
+      100 refinement steps, targeting a corpus within one paisa or a small
+      numerical tolerance for very large values. A cap that makes the target
+      unreachable produces an explanation instead of an invalid result.
+    </p>
+    <p>
+      Projections use the unrounded solution. The displayed monthly SIP is
+      rounded to two decimals, so entering that displayed amount again may
+      produce a slightly different corpus.
+    </p>
+  </details>
+  <details>
+    <summary>How are inflation and a delayed start handled?</summary>
+    <p>
+      Today’s purchasing-power equivalent = estimated final value ÷ (1 +
+      inflation ÷ 100)^(total months ÷ 12). This is an illustration, not an
+      exact purchasing-power forecast.
+    </p>
+    <p>
+      For a delayed start, both the lump sum and monthly SIP begin later and
+      keep the same overall end date. The step-up schedule starts with the first
+      delayed contribution. Money held before that date is not assigned a
+      return.
+    </p>
+  </details>
+  <details>
+    <summary>Are any of these outcomes guaranteed?</summary>
+    <p>
+      No. Constant returns are a modelling assumption. Markets vary, and this
+      projection excludes fees, taxes and inflation unless an inflation-adjusted
+      figure is explicitly shown. More contributions change the result; the
+      calculator does not recommend one approach over another.
+    </p>
+  </details>
+</section>
+<section class="related">
+  <h2>Keep exploring</h2>
+  <div class="related-links">
+    @for (c of related; track c.id) {
+      <a class="btn" [routerLink]="c.route"
+        ><eq-icon [name]="c.icon" />{{ c.title }}<eq-icon name="arrow"
+      /></a>
+    }
+  </div>
+</section>

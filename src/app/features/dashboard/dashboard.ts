@@ -14,6 +14,7 @@ import { QuickPosition } from './quick-position';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard {
+  readonly calculatorCount = CALCULATORS.length;
   readonly recent = inject(RecentStore);
   readonly featured = CALCULATORS.filter((c) => c.featured);
   readonly getCalculator = getCalculator;

@@ -7,8 +7,9 @@ EquiCalc is an investor calculation workspace for Indian equity investors. Enter
 ## Features
 
 - Quick Position dashboard with investment, market value, P&L, return, break-even and recovery.
-- 16 functional calculators: Average Down, Stock Average, Break Even, Profit & Loss, Target Return, CAGR, Dividend, Position Size, Risk / Reward, Partial Sell, Bonus, Stock Split, Rights Issue, P/E, Market Cap and Investment Growth.
+- 17 functional calculators: Average Down, Stock Average, Break Even, Profit & Loss, Target Return, CAGR, SIP & Compounding, Dividend, Position Size, Risk / Reward, Partial Sell, Bonus, Stock Split, Rights Issue, P/E, Market Cap and Investment Growth.
 - Average Down includes budget and target-average modes, before/after comparison, whole-share rounding and an engine-driven scenario table.
+- SIP & Compounding includes fixed/step-up projections, a reverse goal planner, optional initial lump sum and SIP cap, beginning/end payment timing, annual or six-month increases, inflation, delayed starts, yearly breakdowns and return scenarios.
 - Multi-lot weighted averages, reverse P/E/EPS calculations, withdrawal sizing, and year-by-year investment projections.
 - Explicit opt-in reuse of a shared position. Calculators start empty; examples are available on demand. The dashboard starts with a clearly labelled editable example when no position exists.
 - Searchable directory, favourites, eight recent tools, saved scenarios and calculation history.
@@ -48,15 +49,17 @@ npx tsc --noEmit -p tsconfig.spec.json        # strict TypeScript checks
 
 Chrome or Chromium must be installed for headless tests. Set `CHROME_BIN` to its executable when it is not discovered automatically. ESLint was not configured in the generated project, so there is no lint script.
 
-Tests cover every calculator, reference mathematical values, positive/negative/zero cases, invalid inputs, impossible targets, fractional entitlements, floating-point boundaries and numerical limits. Component and state tests cover purchase rows, mode switching, shared-position opt-in, examples/reset, saving, favourites, history deduplication/opt-out, theme persistence and corrupted or unavailable browser storage.
+The suite currently contains 72 passing tests. Tests cover every calculator, reference mathematical values, positive/negative/zero cases, invalid inputs, impossible targets, fractional entitlements, floating-point boundaries and numerical limits. Component and state tests cover purchase rows, mode switching, shared-position opt-in, examples/reset, saving, favourites, history deduplication/opt-out, theme persistence and corrupted or unavailable browser storage.
 
-Browser verification covers all example calculators and primary workflows, including search, save/reopen and theme switching. Responsive checks were performed at 320, 360, 375, 390, 430, 768, 1024, 1280, 1440 and 1920 pixels. Scenario and projection tables scroll locally on narrow screens.
+Browser verification of the original 16 calculators covered their examples and primary workflows, including search, save/reopen and theme switching. Responsive checks were performed at 320, 360, 375, 390, 430, 768, 1024, 1280, 1440 and 1920 pixels. Scenario and projection tables scroll locally on narrow screens. The new SIP page has unit and component coverage; its separate visual browser verification was not completed because that command was not approved.
 
 ## Production build
 
 `npm run build` outputs static files to `dist/EquiCalc/browser/`. Serve that directory over HTTPS with a fallback to `index.html` for client-side routes, such as `/calculators/average-down`. The application requires no API server. HTTPS enables browser clipboard and Web Share features where supported.
 
-The initial production bundle is approximately 317 kB raw / 91 kB estimated transferred, within the original Angular budgets. Routes load calculator, dashboard and collection code lazily. Fonts and SVG icons are local/system assets; no external font or image requests are needed.
+For Netlify, the repository includes `netlify.toml` with build command `npm run build` and publish directory `dist/EquiCalc/browser`. Angular copies `public/_redirects` into that output directory. Its `/* /index.html 200` rewrite lets Angular handle direct links and refreshes on routes such as `/calculators/sip`, while existing JavaScript, CSS and image files are served normally. Redeploy after adding or changing this rule; the existing live deployment does not update until then. For manual uploads, upload the contents of `dist/EquiCalc/browser`, including `_redirects`.
+
+The initial production bundle is approximately 318 kB raw / 91 kB estimated transferred, within the original Angular budgets. Routes load calculator, dashboard and collection code lazily. Fonts and SVG icons are local/system assets; no external font or image requests are needed.
 
 ## Architecture
 
@@ -101,7 +104,13 @@ To add a calculator, implement and test a pure function, add registry metadata a
 - Partial Sell uses average cost, not tax-lot accounting. Withdrawal mode rounds up to enough whole shares and rejects sales beyond the holding.
 - Bonus and rights calculations floor whole-share allotments and display fractional entitlements separately. Stock Split shows theoretical quantity, including possible fractional shares. Actual issuer terms may differ.
 - P/E is undefined at zero EPS and marked not meaningful for negative earnings. No valuation classifications are made.
-- Investment Growth uses an effective annual return converted to a monthly rate, end-of-month contributions and duration rounded to the nearest month, capped at 100 years. All projections are assumptions, excluding inflation, fees and taxes.
+- Investment Growth and SIP & Compounding share `simulateCompounding` in `domain/calculations/compounding.ts`. Investment Growth retains end-of-month contributions and its existing duration-rounding behavior. SIP defaults to beginning-of-month payments, with an advanced end-of-month option.
+- SIP uses an effective annual return converted to a monthly rate. The exact whole-month horizon is entered as years plus optional additional months, capped at 1,200 months (100 years). Annual-return assumptions support −99.99% to 1,000%; increases support 0–100% per interval. Outputs beyond the existing safe numerical range are rejected.
+- SIP increases begin after the first completed interval (month 13 for annual increases, month 7 for six-month increases). The entered percentage applies at **each selected interval**. Six-month increases are not silently treated as an equivalent annual rate. Every contribution is capped when a maximum is supplied.
+- Blank optional amounts and step-up values default to zero; a blank maximum means no cap. Inflation and delayed-start calculations run only when enabled. Disabled fields are omitted from shared summaries.
+- The goal planner searches the same forward engine, using at most 60 bound-expansion steps and 100 binary-search refinements. Its target-corpus tolerance is the larger of ₹0.01 and 16 machine epsilons at the target value. It reports unreachable capped goals and a zero required SIP when the initial investment already meets the target. Displayed starting SIP is rounded to two decimals; projections use the unrounded solution, so re-entering the displayed value can produce a slightly different corpus.
+- Inflation-adjusted value discounts the final corpus by `(1 + inflation / 100)^(months / 12)`. This is a purchasing-power illustration, not an exact forecast. The delayed-start comparison moves both the initial lump sum and SIP to the later start and restarts the contribution-increase schedule, keeping the same overall end date.
+- SIP yearly snapshots separate periodic SIP additions, cumulative contributions (including the lump sum), periodic/cumulative growth and ending value. Partial final years are labelled. Return scenarios hold the contribution schedule constant, including the solved SIP in goal mode. All projections assume constant returns and exclude fees and taxes.
 
 ## Local persistence
 

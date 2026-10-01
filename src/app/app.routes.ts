@@ -19,10 +19,14 @@ export const routes: Routes = [
     path: `calculators/${calculator.id}`,
     title: `${calculator.title} calculator · EquiCalc`,
     data: { calculatorId: calculator.id },
-    loadComponent: () =>
-      import('./features/calculators/calculator-page').then(
-        (m) => m.CalculatorPage,
-      ),
+    loadComponent:
+      calculator.id === 'sip'
+        ? () =>
+            import('./features/calculators/sip/sip-page').then((m) => m.SipPage)
+        : () =>
+            import('./features/calculators/calculator-page').then(
+              (m) => m.CalculatorPage,
+            ),
   })),
   {
     path: 'saved',

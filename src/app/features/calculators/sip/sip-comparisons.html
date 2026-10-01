@@ -1,0 +1,214 @@
+@let c = calculation();
+@if (fixed(); as comparison) {
+  <section class="panel supplement">
+    <div class="section-heading">
+      <div>
+        <h2>Fixed SIP or a growing contribution?</h2>
+        <p>
+          The same starting SIP, period, lump sum and return. Two contribution
+          paths.
+        </p>
+      </div>
+    </div>
+    <div
+      class="table-wrap"
+      tabindex="0"
+      role="region"
+      aria-label="Fixed SIP versus Step-Up SIP"
+    >
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Under the same assumptions</th>
+            <th scope="col">Fixed SIP</th>
+            <th scope="col">Step-Up SIP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Starting monthly SIP</th>
+            <td>
+              {{
+                comparison.fixed.startingMonthlyContribution
+                  | metric: "currency"
+              }}
+            </td>
+            <td>
+              {{
+                comparison.stepUp.startingMonthlyContribution
+                  | metric: "currency"
+              }}
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">Total contributions</th>
+            <td>
+              {{ comparison.fixed.totalContributions | metric: "currency" }}
+            </td>
+            <td>
+              {{ comparison.stepUp.totalContributions | metric: "currency" }}
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">Estimated growth</th>
+            <td>{{ comparison.fixed.totalGrowth | metric: "currency" }}</td>
+            <td>{{ comparison.stepUp.totalGrowth | metric: "currency" }}</td>
+          </tr>
+          <tr class="highlight">
+            <th scope="row">Estimated final value</th>
+            <td>{{ comparison.fixed.finalValue | metric: "currency" }}</td>
+            <td>{{ comparison.stepUp.finalValue | metric: "currency" }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="comparison-insight">
+      <span>Difference in estimated corpus</span
+      ><strong
+        >{{ comparison.corpusDifference >= 0 ? "+" : ""
+        }}{{ comparison.corpusDifference | metric: "currency" }}</strong
+      >
+      <p>
+        Increasing contributions by
+        {{ c.input.stepUpRate! | metric: "percentage" }}
+        {{
+          c.input.stepUpIntervalMonths === 6 ? "every 6 months" : "annually"
+        }}
+        adds {{ comparison.additionalContributions | metric: "currency" }} in
+        contributions over {{ c.input.durationMonths }} months compared with
+        keeping the SIP fixed. Under the same
+        {{ c.input.annualReturnRate | metric: "percentage" }} assumed annual
+        return, the projected ending value differs by
+        {{ comparison.corpusDifference | metric: "currency" }}. This comparison
+        is not a recommendation.
+      </p>
+    </div>
+  </section>
+}
+<section class="panel supplement">
+  <div class="section-heading">
+    <div>
+      <h2>Different assumptions. Different outcomes.</h2>
+      <p>
+        Return scenarios, not predictions. The contribution schedule stays the
+        same.
+      </p>
+    </div>
+  </div>
+  <div class="scenario-grid">
+    @for (scenario of scenarios(); track scenario.annualReturnRate) {
+      <article
+        [class.selected]="
+          scenario.annualReturnRate === c.input.annualReturnRate
+        "
+      >
+        <span>{{ scenario.annualReturnRate | metric: "percentage" }} p.a.</span
+        ><strong>{{
+          scenario.finalValue === null
+            ? "Outside supported range"
+            : (scenario.finalValue | metric: "currency")
+        }}</strong
+        ><small>{{
+          scenario.annualReturnRate === c.input.annualReturnRate
+            ? "Your selected assumption"
+            : "Illustrative assumption"
+        }}</small>
+      </article>
+    }
+  </div>
+  @if (c.goal) {
+    <p class="section-note">
+      These scenarios keep the solved starting SIP unchanged; the goal is not
+      solved again at each return.
+    </p>
+  }
+</section>
+@if (c.realValue !== null) {
+  <section class="panel supplement">
+    <div class="section-heading">
+      <div>
+        <h2>A view in today’s money.</h2>
+        <p>
+          Purchasing-power illustration using
+          {{ c.inflationRate! | metric: "percentage" }} assumed inflation.
+        </p>
+      </div>
+    </div>
+    <div class="two-values">
+      <div>
+        <span>Estimated future value</span
+        ><strong>{{ c.projection.finalValue | metric: "currency" }}</strong>
+      </div>
+      <div>
+        <span>Today’s purchasing-power equivalent</span
+        ><strong>{{ c.realValue | metric: "currency" }}</strong>
+      </div>
+    </div>
+    <p class="section-note">
+      The nominal projection uses
+      {{ c.input.annualReturnRate | metric: "percentage" }} assumed annual
+      return. Inflation discounts the ending value across the full period; it is
+      not simply subtracted from the return.
+    </p>
+  </section>
+}
+@if (c.planned && c.goal) {
+  <section class="panel supplement">
+    <h2>How your current plan compares.</h2>
+    <div class="two-values">
+      <div>
+        <span>Current plan: estimated corpus</span
+        ><strong>{{ c.planned.finalValue | metric: "currency" }}</strong>
+      </div>
+      <div>
+        <span>Entered target</span
+        ><strong>{{ c.goal.targetCorpus | metric: "currency" }}</strong>
+      </div>
+    </div>
+    <p class="comparison-copy">
+      Under the selected assumptions, the current plan’s projected value is
+      {{ absolute(goalGap()) | metric: "currency" }}
+      {{ goalGap() > 0 ? "below" : "above" }} the entered target.
+    </p>
+  </section>
+}
+@if (c.delayed; as delayed) {
+  <section class="panel supplement">
+    <div class="section-heading">
+      <div>
+        <h2>Cost of waiting</h2>
+        <p>
+          Starting now and starting {{ delayed.delayMonths }} months later, with
+          the same end date.
+        </p>
+      </div>
+    </div>
+    <div class="two-values">
+      <div>
+        <span>Start now: estimated value</span
+        ><strong>{{ delayed.startNow.finalValue | metric: "currency" }}</strong
+        ><small
+          >Contributions
+          {{ delayed.startNow.totalContributions | metric: "currency" }}</small
+        >
+      </div>
+      <div>
+        <span>Start later: estimated value</span
+        ><strong>{{ delayed.delayed.finalValue | metric: "currency" }}</strong
+        ><small
+          >Contributions
+          {{ delayed.delayed.totalContributions | metric: "currency" }}</small
+        >
+      </div>
+    </div>
+    <div class="comparison-insight">
+      <span>Projected difference under these assumptions</span
+      ><strong>{{ delayed.corpusDifference | metric: "currency" }}</strong>
+      <p>
+        Start-now value minus delayed-start value. Both the initial lump sum and
+        SIP start later, with increases counted from that later start. This
+        shows a mathematical difference, not a loss forecast.
+      </p>
+    </div>
+  </section>
+}

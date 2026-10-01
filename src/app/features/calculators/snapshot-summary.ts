@@ -1,3 +1,4 @@
+import { sipSnapshotFields } from './sip/sip-config';
 import { CalculationSnapshot } from '../../core/models/calculation';
 import { formatCurrency } from '../../core/utilities/format';
 import { CONFIGS } from './calculator-config';
@@ -19,7 +20,11 @@ export function snapshotInputs(
   const mode = CONFIGS[snapshot.calculatorId]?.modes.find(
     (mode) => mode.id === snapshot.mode,
   );
-  return (mode?.fields ?? []).flatMap((field) => {
+  const fields =
+    snapshot.calculatorId === 'sip'
+      ? sipSnapshotFields(snapshot)
+      : (mode?.fields ?? []);
+  return fields.flatMap((field) => {
     const value = snapshot.inputs[field.key];
     if (value === null || value === undefined) return [];
     const option = field.options?.find((option) => option.value === value);
