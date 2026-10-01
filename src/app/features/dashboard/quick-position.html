@@ -1,0 +1,94 @@
+<section class="quick-panel" aria-labelledby="quick-heading">
+  <div class="quick-header">
+    <div class="quick-title">
+      <span class="icon-tile"><eq-icon name="pie" /></span>
+      <div>
+        <h2 id="quick-heading">Your position, at a glance.</h2>
+        <p>
+          QUICK POSITION <span>·</span>
+          {{
+            example ? "Example values — make them yours" : "Your saved position"
+          }}
+        </p>
+      </div>
+    </div>
+    <span class="live-tag"><span></span> Updates as you type</span>
+  </div>
+  <div class="quick-content">
+    <form class="quick-inputs" [formGroup]="form" (ngSubmit)="usePosition()">
+      <div class="quick-fields">
+        @for (field of fields; track field.key) {
+          <eq-field
+            [field]="field"
+            [control]="form.controls[field.key]"
+            [id]="'quick-' + field.key"
+          />
+        }
+      </div>
+      <button
+        class="btn primary use-position"
+        type="submit"
+        [disabled]="!result()"
+      >
+        Use in calculators <eq-icon name="arrow" />
+      </button>
+    </form>
+    <div class="quick-results" aria-live="polite">
+      @if (result(); as r) {
+        <div>
+          <span>Total investment</span
+          ><strong>{{ r.investment | metric: "currency" }}</strong>
+        </div>
+        <div>
+          <span>Current value</span
+          ><strong>{{ r.value | metric: "currency" }}</strong>
+        </div>
+        <div>
+          <span>Unrealised P&L</span
+          ><strong
+            [class.negative]="r.netPnl < 0"
+            [class.positive]="r.netPnl > 0"
+            >{{ r.netPnl | metric: "currency" }}</strong
+          >
+        </div>
+        <div>
+          <span>Return</span
+          ><strong
+            [class.negative]="r.returnPercentage < 0"
+            [class.positive]="r.returnPercentage > 0"
+            >{{ r.returnPercentage > 0 ? "+" : ""
+            }}{{ r.returnPercentage | metric: "percentage" }}</strong
+          >
+        </div>
+        <div>
+          <span>Break-even price</span
+          ><strong>{{ r.breakEven | metric: "currency" }}</strong>
+        </div>
+        <div class="recovery">
+          <span>Recovery required <eq-icon name="info" /></span
+          ><strong>{{
+            r.recovery === null
+              ? "Undefined at zero"
+              : r.recovery === 0
+                ? "Break-even reached"
+                : "+" + (r.recovery | metric: "percentage")
+          }}</strong>
+        </div>
+      } @else {
+        <p class="quick-error">
+          Enter a positive whole quantity, positive average price, and a current
+          price of zero or more.
+        </p>
+      }
+    </div>
+  </div>
+  <div class="quick-foot">
+    <eq-icon name="shield" /><span>{{
+      message() ||
+        "Your numbers stay in this browser. Reuse this position only when you choose to."
+    }}</span>
+    @if (message()) {
+      <a routerLink="/calculators/average-down">Open Average Down →</a>
+    }
+  </div>
+</section>

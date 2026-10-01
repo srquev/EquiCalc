@@ -1,36 +1,500 @@
-export interface FieldDefinition { readonly key: string; readonly label: string; readonly unit?: string; readonly optional?: boolean; readonly min?: number; readonly step?: number; readonly hint?: string; readonly options?: readonly { label: string; value: number }[]; }
-export interface CalculatorMode { readonly id: string; readonly label: string; readonly fields: readonly FieldDefinition[]; readonly example: Readonly<Record<string, number>>; }
-export interface CalculatorConfig { readonly modes: readonly CalculatorMode[]; readonly formula: string; readonly explanation: string; readonly example: string; readonly mistake: string; readonly faq: readonly [string, string]; readonly position?: boolean; }
-const f = (key: string, label: string, unit = '₹', extra: Partial<FieldDefinition> = {}): FieldDefinition => ({ key, label, unit, min: 0, ...extra });
+export interface FieldDefinition {
+  readonly key: string;
+  readonly label: string;
+  readonly unit?: string;
+  readonly optional?: boolean;
+  readonly min?: number;
+  readonly step?: number;
+  readonly hint?: string;
+  readonly options?: readonly { label: string; value: number }[];
+}
+export interface CalculatorMode {
+  readonly id: string;
+  readonly label: string;
+  readonly fields: readonly FieldDefinition[];
+  readonly example: Readonly<Record<string, number>>;
+}
+export interface CalculatorConfig {
+  readonly modes: readonly CalculatorMode[];
+  readonly formula: string;
+  readonly explanation: string;
+  readonly example: string;
+  readonly mistake: string;
+  readonly faq: readonly [string, string];
+  readonly position?: boolean;
+}
+const f = (
+  key: string,
+  label: string,
+  unit = '₹',
+  extra: Partial<FieldDefinition> = {},
+): FieldDefinition => ({ key, label, unit, min: 0, ...extra });
 const qty = f('quantity', 'Quantity', 'shares', { step: 1 });
 const average = f('average', 'Average purchase price');
 const current = f('current', 'Current market price');
 const position = [qty, average, current];
-const mode = (id: string, label: string, fields: readonly FieldDefinition[], example: Record<string, number>): CalculatorMode => ({ id, label, fields, example });
+const mode = (
+  id: string,
+  label: string,
+  fields: readonly FieldDefinition[],
+  example: Record<string, number>,
+): CalculatorMode => ({ id, label, fields, example });
 export const CONFIGS: Readonly<Record<string, CalculatorConfig>> = {
   'average-down': {
     position: true,
-    modes: [mode('investment', 'By investment', [...position, f('budget', 'Additional investment', '₹', { hint: 'Your budget. Actual investment uses whole shares.' })], { quantity: 100, average: 500, current: 350, budget: 20000 }),
-      mode('target', 'Target average', [...position, f('target', 'Desired average')], { quantity: 100, average: 500, current: 350, target: 400 })],
-    formula: 'New average = (existing investment + actual additional investment) ÷ total shares',
-    explanation: 'Compare your position before and after an additional purchase. A lower average changes the recovery needed, while increasing the amount of capital exposed.',
-    example: 'With 100 shares bought at 500 and a 20,000 budget at 350, you can buy 57 whole shares. Use Try example to explore the exact results.',
-    mistake: 'A lower average does not reduce the existing rupee loss at the same market price. It adds capital and exposure.',
-    faq: ['Can I reach any target average?', 'No. When buying below your existing average, the new average stays above the new purchase price. Target mode rounds shares up to meet or better an achievable target.']
+    modes: [
+      mode(
+        'investment',
+        'By investment',
+        [
+          ...position,
+          f('budget', 'Additional investment', '₹', {
+            hint: 'Your budget. Actual investment uses whole shares.',
+          }),
+        ],
+        { quantity: 100, average: 500, current: 350, budget: 20000 },
+      ),
+      mode(
+        'target',
+        'Target average',
+        [...position, f('target', 'Desired average')],
+        { quantity: 100, average: 500, current: 350, target: 400 },
+      ),
+    ],
+    formula:
+      'New average = (existing investment + actual additional investment) ÷ total shares',
+    explanation:
+      'Compare your position before and after an additional purchase. A lower average changes the recovery needed, while increasing the amount of capital exposed.',
+    example:
+      'With 100 shares bought at 500 and a 20,000 budget at 350, you can buy 57 whole shares. Use Try example to explore the exact results.',
+    mistake:
+      'A lower average does not reduce the existing rupee loss at the same market price. It adds capital and exposure.',
+    faq: [
+      'Can I reach any target average?',
+      'No. When buying below your existing average, the new average stays above the new purchase price. Target mode rounds shares up to meet or better an achievable target.',
+    ],
   },
-  'stock-average': { modes: [mode('default', 'Purchases', [], {})], formula: 'Weighted average = sum of (quantity × purchase price) ÷ total quantity', explanation: 'Combine purchase lots into one weighted cost basis. Each lot contributes in proportion to the number of shares.', example: '100 shares at 500 and 100 shares at 400 have a weighted average of 450.', mistake: 'A simple average of prices is only correct when quantities are equal.', faq: ['Are brokerage charges included?', 'Enter a purchase price that incorporates your costs if you want a cost-inclusive average.'] },
-  'break-even': { position: true, modes: [mode('default', 'Position', [average, current, { ...qty, optional: true }], { average: 500, current: 350, quantity: 100 })], formula: 'Recovery required = (average price ÷ current price − 1) × 100', explanation: 'See the price gap and percentage rise needed to return to your purchase price.', example: 'A fall from 500 to 350 is a 30% loss. Returning from 350 to 500 requires a 42.86% gain.', mistake: 'Loss and recovery use different starting values, so their percentages are not symmetrical.', faq: ['What if the current price is zero?', 'A percentage recovery from zero is undefined. The calculator shows this explicitly instead of an infinite result.'] },
-  'profit-loss': { position: true, modes: [mode('default', 'Position', [average, current, qty, f('charges', 'Total charges', '₹', { optional: true })], { average: 500, current: 350, quantity: 100, charges: 100 })], formula: 'Net P&L = (sell price − purchase price) × quantity − total charges', explanation: 'Calculate gross and net returns for a position. Charges are deducted once from gross profit.', example: '100 shares bought at 500 and valued at 350 have a gross loss of 15,000, before charges.', mistake: 'Do not enter the same charges in both your purchase price and the separate charges field.', faq: ['What does return percentage use?', 'Net profit or loss divided by the purchase value. Taxes are not estimated.'] },
-  'target-return': { position: true, modes: [mode('return', 'Target return %', [average, qty, f('desired', 'Desired return', '%', { min: -100 })], { average: 500, quantity: 100, desired: 20 }), mode('price', 'Target price', [average, qty, f('desired', 'Target price')], { average: 500, quantity: 100, desired: 600 })], formula: 'Target price = purchase price × (1 + desired return ÷ 100)', explanation: 'Convert a hypothetical return to a price, or calculate the return implied by a price.', example: 'A 20% return on a purchase price of 500 implies a price of 600.', mistake: 'A calculated target is a mathematical scenario, not a prediction.', faq: ['Are charges included?', 'No. These are gross price returns, excluding charges and taxes.'] },
-  'cagr': { modes: [mode('default', 'Investment', [f('initial', 'Initial investment'), f('final', 'Final value'), f('years', 'Duration', 'years', { step: 0.1 })], { initial: 100000, final: 250000, years: 5 })], formula: 'CAGR = [(final value ÷ initial investment)^(1 ÷ years) − 1] × 100', explanation: 'Find the equivalent annual compound rate between a starting investment and ending value.', example: 'An investment that grows from 100 to 121 over two years has a CAGR of 10%.', mistake: 'CAGR does not describe volatility or account for cash flows during the period.', faq: ['Can I enter part of a year?', 'Yes. Use a decimal duration such as 2.5 years. A final value of zero represents a total loss.'] },
-  'dividend': { position: true, modes: [mode('default', 'Income', [...position, f('dividend', 'Dividend per share per payment'), f('frequency', 'Payment frequency', '', { options: [{ label: 'Annual', value: 1 }, { label: 'Semiannual', value: 2 }, { label: 'Quarterly', value: 4 }] })], { quantity: 100, average: 500, current: 600, dividend: 5, frequency: 4 })], formula: 'Annual income = shares × dividend per payment × payments per year', explanation: 'Estimate annual dividend income, yield on your purchase cost, and yield at the current market price.', example: '100 shares paying 5 per share quarterly would generate 2,000 a year.', mistake: 'Enter the dividend per payment, not the annual total when a quarterly frequency is selected.', faq: ['Are future dividend payments guaranteed?', 'No. Dividends and payment frequency may change; this is a calculation using your assumptions.'] },
-  'position-size': { modes: [mode('default', 'Long position', [f('capital', 'Portfolio capital'), f('risk', 'Maximum risk', '%'), f('entry', 'Entry price'), f('stop', 'Stop-loss price')], { capital: 500000, risk: 1, entry: 500, stop: 475 })], formula: 'Shares = floor of the smaller of (risk budget ÷ risk per share) and (capital ÷ entry price)', explanation: 'Calculate whole shares constrained by both your risk budget and available capital, without leverage.', example: 'A 500,000 portfolio with 1% risk, entry at 500 and stop at 475 allows 200 shares.', mistake: 'A stop price does not guarantee execution at that price; gaps and charges are not modelled.', faq: ['Is this a recommended position?', 'No. It is mathematical sizing based entirely on your inputs for a long position.'] },
-  'risk-reward': { modes: [mode('default', 'Long position', [f('entry', 'Entry price'), f('stop', 'Stop-loss price'), f('target', 'Target price')], { entry: 500, stop: 450, target: 600 })], formula: 'Risk per share = entry − stop; reward per share = target − entry', explanation: 'Compare the distance from entry to a hypothetical stop and target.', example: 'Entry at 500, stop at 450 and target at 600 produces risk of 50 and reward of 100 per share.', mistake: 'A ratio does not tell you the probability of either outcome.', faq: ['Does this support short positions?', 'This V1 calculator models long positions, with the stop below entry and target above entry.'] },
-  'partial-sell': { position: true, modes: [mode('quantity', 'Sell quantity', [...position, f('amount', 'Shares to sell', 'shares', { step: 1 })], { quantity: 100, average: 500, current: 600, amount: 25 }), mode('withdraw', 'Withdraw amount', [...position, f('amount', 'Amount to withdraw')], { quantity: 100, average: 500, current: 600, amount: 10000 })], formula: 'Realised P&L = shares sold × (sale price − average cost)', explanation: 'See sale proceeds and the cost basis and market value of the remaining position.', example: 'Selling 25 of 100 shares at 600, with average cost 500, realises a gross profit of 2,500.', mistake: 'Sale proceeds include your returned capital; they are not all profit.', faq: ['How is a withdrawal rounded?', 'Shares are rounded up to meet the requested amount, without exceeding your holding. The cost-basis method is average cost, not tax-lot accounting.'] },
-  'bonus': { modes: [mode('default', 'Bonus ratio', [qty, average, f('new', 'Bonus shares received', 'for every', { step: 1 }), f('held', 'Existing shares held', 'shares', { step: 1 })], { quantity: 100, average: 500, new: 1, held: 1 })], formula: 'Bonus entitlement = existing shares × bonus numerator ÷ ratio denominator', explanation: 'Calculate whole bonus shares and a theoretical adjusted average cost. Fractional entitlements are shown separately.', example: 'A 1-for-1 bonus on 100 shares gives 100 additional shares and halves the average cost.', mistake: 'A bonus does not guarantee that the market value stays unchanged.', faq: ['What happens to fractions?', 'The calculation floors allotment to whole shares. Actual treatment of fractions depends on the corporate action terms.'] },
-  'stock-split': { modes: [mode('default', 'Face values', [qty, average, f('oldFace', 'Old face value'), f('newFace', 'New face value')], { quantity: 100, average: 500, oldFace: 10, newFace: 2 })], formula: 'Split multiplier = old face value ÷ new face value; adjusted cost = original cost per share ÷ multiplier', explanation: 'Calculate theoretical share quantity and cost after a split or consolidation.', example: 'A face value change from 10 to 2 multiplies the share count by five.', mistake: 'Face value is different from the market price of a share.', faq: ['Can this calculate a reverse split?', 'Yes. A larger new face value reduces quantity. Fractional entitlements depend on the issuer’s terms.'] },
-  'rights': { modes: [mode('default', 'Entitlement', [qty, f('new', 'Rights shares offered', 'for every', { step: 1 }), f('held', 'Existing shares held', 'shares', { step: 1 }), f('price', 'Rights subscription price'), { ...average, optional: true }], { quantity: 100, new: 1, held: 4, price: 300, average: 500 })], formula: 'Rights shares = floor(existing shares × rights numerator ÷ ratio denominator)', explanation: 'Calculate whole-share subscription cost assuming you exercise the entitlement. Add an existing average to see a combined cost.', example: 'A 1-for-4 entitlement on 100 shares permits 25 rights shares before issuer-specific adjustments.', mistake: 'Entitlement is not an automatic purchase. Subscription and eligibility depend on the issue terms.', faq: ['Are fractions subscribed?', 'This calculator uses whole shares and shows fractions separately. Check the issuer’s actual allotment rules.'] },
-  'pe': { modes: [mode('pe', 'Calculate P/E', [f('price', 'Share price'), f('eps', 'Earnings per share', '₹', { min: -1000000000000 })], { price: 500, eps: 25 }), mode('eps', 'Calculate EPS', [f('price', 'Share price'), f('pe', 'P/E ratio', '×')], { price: 500, pe: 20 }), mode('price', 'Implied price', [f('eps', 'Earnings per share'), f('pe', 'P/E ratio', '×')], { eps: 25, pe: 20 })], formula: 'P/E = price ÷ EPS; EPS = price ÷ P/E; implied price = EPS × P/E', explanation: 'Explore the mathematical relationship between price, earnings per share and a P/E multiple.', example: 'Price of 500 divided by EPS of 25 gives a P/E of 20.', mistake: 'Use consistent earnings periods. Trailing and forecast EPS are not interchangeable.', faq: ['What if EPS is zero or negative?', 'P/E is undefined at zero EPS and is not meaningful for negative earnings. No valuation recommendation is made.'] },
-  'market-cap': { modes: [mode('default', 'Equity value', [f('price', 'Share price'), f('shares', 'Outstanding shares', ''), f('unit', 'Share count unit', '', { options: [{ label: 'Shares', value: 1 }, { label: 'Thousands', value: 1000 }, { label: 'Lakhs', value: 100000 }, { label: 'Crores', value: 10000000 }, { label: 'Millions', value: 1000000 }, { label: 'Billions', value: 1000000000 }] })], { price: 500, shares: 10, unit: 10000000 })], formula: 'Market capitalization = share price × total outstanding shares', explanation: 'Calculate the equity market value using a manually entered price and outstanding share count.', example: 'A price of 500 and 10 crore outstanding shares imply market capitalization of 5,000 crore.', mistake: 'Use outstanding shares, not the number of shares traded or your own holding.', faq: ['Is this enterprise value?', 'No. Market capitalization measures equity value and does not adjust for debt or cash.'] },
-  'investment-growth': { modes: [mode('lump', 'Lump sum', [f('initial', 'Initial investment'), f('annual', 'Assumed annual return', '%', { min: -99.99 }), f('years', 'Duration', 'years', { step: 0.1 })], { initial: 100000, annual: 10, years: 10 }), mode('monthly', 'Monthly investment', [f('initial', 'Initial investment', '₹', { optional: true }), f('monthly', 'Monthly contribution'), f('annual', 'Assumed annual return', '%', { min: -99.99 }), f('years', 'Duration', 'years', { step: 0.1 })], { initial: 100000, monthly: 5000, annual: 10, years: 10 })], formula: 'Monthly rate = (1 + annual return ÷ 100)^(1 ÷ 12) − 1. Each month: value = previous value × (1 + monthly rate) + contribution.', explanation: 'Project an investment using a constant assumed return and end-of-month contributions. Duration is rounded to the nearest whole month.', example: 'A lump sum of 100,000 growing at an assumed 10% annually would become 121,000 after two years.', mistake: 'A smooth projection is not a forecast. Actual returns vary, and inflation, fees and taxes are excluded.', faq: ['When are monthly contributions invested?', 'At the end of each month. The annual return is treated as an effective annual rate, not divided by twelve.'] }
+  'stock-average': {
+    modes: [mode('default', 'Purchases', [], {})],
+    formula:
+      'Weighted average = sum of (quantity × purchase price) ÷ total quantity',
+    explanation:
+      'Combine purchase lots into one weighted cost basis. Each lot contributes in proportion to the number of shares.',
+    example:
+      '100 shares at 500 and 100 shares at 400 have a weighted average of 450.',
+    mistake:
+      'A simple average of prices is only correct when quantities are equal.',
+    faq: [
+      'Are brokerage charges included?',
+      'Enter a purchase price that incorporates your costs if you want a cost-inclusive average.',
+    ],
+  },
+  'break-even': {
+    position: true,
+    modes: [
+      mode(
+        'default',
+        'Position',
+        [average, current, { ...qty, optional: true }],
+        { average: 500, current: 350, quantity: 100 },
+      ),
+    ],
+    formula: 'Recovery required = (average price ÷ current price − 1) × 100',
+    explanation:
+      'See the price gap and percentage rise needed to return to your purchase price.',
+    example:
+      'A fall from 500 to 350 is a 30% loss. Returning from 350 to 500 requires a 42.86% gain.',
+    mistake:
+      'Loss and recovery use different starting values, so their percentages are not symmetrical.',
+    faq: [
+      'What if the current price is zero?',
+      'A percentage recovery from zero is undefined. The calculator shows this explicitly instead of an infinite result.',
+    ],
+  },
+  'profit-loss': {
+    position: true,
+    modes: [
+      mode(
+        'default',
+        'Position',
+        [
+          average,
+          current,
+          qty,
+          f('charges', 'Total charges', '₹', { optional: true }),
+        ],
+        { average: 500, current: 350, quantity: 100, charges: 100 },
+      ),
+    ],
+    formula:
+      'Net P&L = (sell price − purchase price) × quantity − total charges',
+    explanation:
+      'Calculate gross and net returns for a position. Charges are deducted once from gross profit.',
+    example:
+      '100 shares bought at 500 and valued at 350 have a gross loss of 15,000, before charges.',
+    mistake:
+      'Do not enter the same charges in both your purchase price and the separate charges field.',
+    faq: [
+      'What does return percentage use?',
+      'Net profit or loss divided by the purchase value. Taxes are not estimated.',
+    ],
+  },
+  'target-return': {
+    position: true,
+    modes: [
+      mode(
+        'return',
+        'Target return %',
+        [average, qty, f('desired', 'Desired return', '%', { min: -100 })],
+        { average: 500, quantity: 100, desired: 20 },
+      ),
+      mode(
+        'price',
+        'Target price',
+        [average, qty, f('desired', 'Target price')],
+        { average: 500, quantity: 100, desired: 600 },
+      ),
+    ],
+    formula: 'Target price = purchase price × (1 + desired return ÷ 100)',
+    explanation:
+      'Convert a hypothetical return to a price, or calculate the return implied by a price.',
+    example: 'A 20% return on a purchase price of 500 implies a price of 600.',
+    mistake:
+      'A calculated target is a mathematical scenario, not a prediction.',
+    faq: [
+      'Are charges included?',
+      'No. These are gross price returns, excluding charges and taxes.',
+    ],
+  },
+  cagr: {
+    modes: [
+      mode(
+        'default',
+        'Investment',
+        [
+          f('initial', 'Initial investment'),
+          f('final', 'Final value'),
+          f('years', 'Duration', 'years', { step: 0.1 }),
+        ],
+        { initial: 100000, final: 250000, years: 5 },
+      ),
+    ],
+    formula:
+      'CAGR = [(final value ÷ initial investment)^(1 ÷ years) − 1] × 100',
+    explanation:
+      'Find the equivalent annual compound rate between a starting investment and ending value.',
+    example:
+      'An investment that grows from 100 to 121 over two years has a CAGR of 10%.',
+    mistake:
+      'CAGR does not describe volatility or account for cash flows during the period.',
+    faq: [
+      'Can I enter part of a year?',
+      'Yes. Use a decimal duration such as 2.5 years. A final value of zero represents a total loss.',
+    ],
+  },
+  dividend: {
+    position: true,
+    modes: [
+      mode(
+        'default',
+        'Income',
+        [
+          ...position,
+          f('dividend', 'Dividend per share per payment'),
+          f('frequency', 'Payment frequency', '', {
+            options: [
+              { label: 'Annual', value: 1 },
+              { label: 'Semiannual', value: 2 },
+              { label: 'Quarterly', value: 4 },
+            ],
+          }),
+        ],
+        {
+          quantity: 100,
+          average: 500,
+          current: 600,
+          dividend: 5,
+          frequency: 4,
+        },
+      ),
+    ],
+    formula:
+      'Annual income = shares × dividend per payment × payments per year',
+    explanation:
+      'Estimate annual dividend income, yield on your purchase cost, and yield at the current market price.',
+    example:
+      '100 shares paying 5 per share quarterly would generate 2,000 a year.',
+    mistake:
+      'Enter the dividend per payment, not the annual total when a quarterly frequency is selected.',
+    faq: [
+      'Are future dividend payments guaranteed?',
+      'No. Dividends and payment frequency may change; this is a calculation using your assumptions.',
+    ],
+  },
+  'position-size': {
+    modes: [
+      mode(
+        'default',
+        'Long position',
+        [
+          f('capital', 'Portfolio capital'),
+          f('risk', 'Maximum risk', '%'),
+          f('entry', 'Entry price'),
+          f('stop', 'Stop-loss price'),
+        ],
+        { capital: 500000, risk: 1, entry: 500, stop: 475 },
+      ),
+    ],
+    formula:
+      'Shares = floor of the smaller of (risk budget ÷ risk per share) and (capital ÷ entry price)',
+    explanation:
+      'Calculate whole shares constrained by both your risk budget and available capital, without leverage.',
+    example:
+      'A 500,000 portfolio with 1% risk, entry at 500 and stop at 475 allows 200 shares.',
+    mistake:
+      'A stop price does not guarantee execution at that price; gaps and charges are not modelled.',
+    faq: [
+      'Is this a recommended position?',
+      'No. It is mathematical sizing based entirely on your inputs for a long position.',
+    ],
+  },
+  'risk-reward': {
+    modes: [
+      mode(
+        'default',
+        'Long position',
+        [
+          f('entry', 'Entry price'),
+          f('stop', 'Stop-loss price'),
+          f('target', 'Target price'),
+        ],
+        { entry: 500, stop: 450, target: 600 },
+      ),
+    ],
+    formula: 'Risk per share = entry − stop; reward per share = target − entry',
+    explanation:
+      'Compare the distance from entry to a hypothetical stop and target.',
+    example:
+      'Entry at 500, stop at 450 and target at 600 produces risk of 50 and reward of 100 per share.',
+    mistake: 'A ratio does not tell you the probability of either outcome.',
+    faq: [
+      'Does this support short positions?',
+      'This V1 calculator models long positions, with the stop below entry and target above entry.',
+    ],
+  },
+  'partial-sell': {
+    position: true,
+    modes: [
+      mode(
+        'quantity',
+        'Sell quantity',
+        [...position, f('amount', 'Shares to sell', 'shares', { step: 1 })],
+        { quantity: 100, average: 500, current: 600, amount: 25 },
+      ),
+      mode(
+        'withdraw',
+        'Withdraw amount',
+        [...position, f('amount', 'Amount to withdraw')],
+        { quantity: 100, average: 500, current: 600, amount: 10000 },
+      ),
+    ],
+    formula: 'Realised P&L = shares sold × (sale price − average cost)',
+    explanation:
+      'See sale proceeds and the cost basis and market value of the remaining position.',
+    example:
+      'Selling 25 of 100 shares at 600, with average cost 500, realises a gross profit of 2,500.',
+    mistake:
+      'Sale proceeds include your returned capital; they are not all profit.',
+    faq: [
+      'How is a withdrawal rounded?',
+      'Shares are rounded up to meet the requested amount, without exceeding your holding. The cost-basis method is average cost, not tax-lot accounting.',
+    ],
+  },
+  bonus: {
+    modes: [
+      mode(
+        'default',
+        'Bonus ratio',
+        [
+          qty,
+          average,
+          f('new', 'Bonus shares received', 'for every', { step: 1 }),
+          f('held', 'Existing shares held', 'shares', { step: 1 }),
+        ],
+        { quantity: 100, average: 500, new: 1, held: 1 },
+      ),
+    ],
+    formula:
+      'Bonus entitlement = existing shares × bonus numerator ÷ ratio denominator',
+    explanation:
+      'Calculate whole bonus shares and a theoretical adjusted average cost. Fractional entitlements are shown separately.',
+    example:
+      'A 1-for-1 bonus on 100 shares gives 100 additional shares and halves the average cost.',
+    mistake:
+      'A bonus does not guarantee that the market value stays unchanged.',
+    faq: [
+      'What happens to fractions?',
+      'The calculation floors allotment to whole shares. Actual treatment of fractions depends on the corporate action terms.',
+    ],
+  },
+  'stock-split': {
+    modes: [
+      mode(
+        'default',
+        'Face values',
+        [
+          qty,
+          average,
+          f('oldFace', 'Old face value'),
+          f('newFace', 'New face value'),
+        ],
+        { quantity: 100, average: 500, oldFace: 10, newFace: 2 },
+      ),
+    ],
+    formula:
+      'Split multiplier = old face value ÷ new face value; adjusted cost = original cost per share ÷ multiplier',
+    explanation:
+      'Calculate theoretical share quantity and cost after a split or consolidation.',
+    example:
+      'A face value change from 10 to 2 multiplies the share count by five.',
+    mistake: 'Face value is different from the market price of a share.',
+    faq: [
+      'Can this calculate a reverse split?',
+      'Yes. A larger new face value reduces quantity. Fractional entitlements depend on the issuer’s terms.',
+    ],
+  },
+  rights: {
+    modes: [
+      mode(
+        'default',
+        'Entitlement',
+        [
+          qty,
+          f('new', 'Rights shares offered', 'for every', { step: 1 }),
+          f('held', 'Existing shares held', 'shares', { step: 1 }),
+          f('price', 'Rights subscription price'),
+          { ...average, optional: true },
+        ],
+        { quantity: 100, new: 1, held: 4, price: 300, average: 500 },
+      ),
+    ],
+    formula:
+      'Rights shares = floor(existing shares × rights numerator ÷ ratio denominator)',
+    explanation:
+      'Calculate whole-share subscription cost assuming you exercise the entitlement. Add an existing average to see a combined cost.',
+    example:
+      'A 1-for-4 entitlement on 100 shares permits 25 rights shares before issuer-specific adjustments.',
+    mistake:
+      'Entitlement is not an automatic purchase. Subscription and eligibility depend on the issue terms.',
+    faq: [
+      'Are fractions subscribed?',
+      'This calculator uses whole shares and shows fractions separately. Check the issuer’s actual allotment rules.',
+    ],
+  },
+  pe: {
+    modes: [
+      mode(
+        'pe',
+        'Calculate P/E',
+        [
+          f('price', 'Share price'),
+          f('eps', 'Earnings per share', '₹', { min: -1000000000000 }),
+        ],
+        { price: 500, eps: 25 },
+      ),
+      mode(
+        'eps',
+        'Calculate EPS',
+        [f('price', 'Share price'), f('pe', 'P/E ratio', '×')],
+        { price: 500, pe: 20 },
+      ),
+      mode(
+        'price',
+        'Implied price',
+        [f('eps', 'Earnings per share'), f('pe', 'P/E ratio', '×')],
+        { eps: 25, pe: 20 },
+      ),
+    ],
+    formula: 'P/E = price ÷ EPS; EPS = price ÷ P/E; implied price = EPS × P/E',
+    explanation:
+      'Explore the mathematical relationship between price, earnings per share and a P/E multiple.',
+    example: 'Price of 500 divided by EPS of 25 gives a P/E of 20.',
+    mistake:
+      'Use consistent earnings periods. Trailing and forecast EPS are not interchangeable.',
+    faq: [
+      'What if EPS is zero or negative?',
+      'P/E is undefined at zero EPS and is not meaningful for negative earnings. No valuation recommendation is made.',
+    ],
+  },
+  'market-cap': {
+    modes: [
+      mode(
+        'default',
+        'Equity value',
+        [
+          f('price', 'Share price'),
+          f('shares', 'Outstanding shares', ''),
+          f('unit', 'Share count unit', '', {
+            options: [
+              { label: 'Shares', value: 1 },
+              { label: 'Thousands', value: 1000 },
+              { label: 'Lakhs', value: 100000 },
+              { label: 'Crores', value: 10000000 },
+              { label: 'Millions', value: 1000000 },
+              { label: 'Billions', value: 1000000000 },
+            ],
+          }),
+        ],
+        { price: 500, shares: 10, unit: 10000000 },
+      ),
+    ],
+    formula: 'Market capitalization = share price × total outstanding shares',
+    explanation:
+      'Calculate the equity market value using a manually entered price and outstanding share count.',
+    example:
+      'A price of 500 and 10 crore outstanding shares imply market capitalization of 5,000 crore.',
+    mistake:
+      'Use outstanding shares, not the number of shares traded or your own holding.',
+    faq: [
+      'Is this enterprise value?',
+      'No. Market capitalization measures equity value and does not adjust for debt or cash.',
+    ],
+  },
+  'investment-growth': {
+    modes: [
+      mode(
+        'lump',
+        'Lump sum',
+        [
+          f('initial', 'Initial investment'),
+          f('annual', 'Assumed annual return', '%', { min: -99.99 }),
+          f('years', 'Duration', 'years', { step: 0.1 }),
+        ],
+        { initial: 100000, annual: 10, years: 10 },
+      ),
+      mode(
+        'monthly',
+        'Monthly investment',
+        [
+          f('initial', 'Initial investment', '₹', { optional: true }),
+          f('monthly', 'Monthly contribution'),
+          f('annual', 'Assumed annual return', '%', { min: -99.99 }),
+          f('years', 'Duration', 'years', { step: 0.1 }),
+        ],
+        { initial: 100000, monthly: 5000, annual: 10, years: 10 },
+      ),
+    ],
+    formula:
+      'Monthly rate = (1 + annual return ÷ 100)^(1 ÷ 12) − 1. Each month: value = previous value × (1 + monthly rate) + contribution.',
+    explanation:
+      'Project an investment using a constant assumed return and end-of-month contributions. Duration is rounded to the nearest whole month.',
+    example:
+      'A lump sum of 100,000 growing at an assumed 10% annually would become 121,000 after two years.',
+    mistake:
+      'A smooth projection is not a forecast. Actual returns vary, and inflation, fees and taxes are excluded.',
+    faq: [
+      'When are monthly contributions invested?',
+      'At the end of each month. The annual return is treated as an effective annual rate, not divided by twelve.',
+    ],
+  },
 };

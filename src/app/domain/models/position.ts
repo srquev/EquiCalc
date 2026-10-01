@@ -3,4 +3,7 @@ export interface InvestorPosition {
   readonly averagePrice: number;
   readonly currentPrice: number;
 }
-export interface PurchaseLot { readonly quantity: number; readonly price: number; }
+export interface PurchaseLot {
+  readonly quantity: number;
+  readonly price: number;
+}

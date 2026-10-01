@@ -1,12 +1,148 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Icon } from '../../shared/components/icon';
-@Component({ selector: 'eq-information', imports: [RouterLink, Icon], changeDetection: ChangeDetectionStrategy.OnPush,
- template: `@switch (page) {
- @case ('about') { <header class="page-header"><div class="eyebrow">A LITTLE CLARITY GOES A LONG WAY</div><h1>Smarter calculations.<br>Clearer investing decisions.</h1><p>Meet EquiCalc, your investor calculation workspace.</p></header><article class="panel prose"><h2>Built to make the math easier.</h2><p>EquiCalc is a collection of investor-focused mathematical tools designed to make common investment calculations fast and understandable. It brings averages, returns, recovery, risk and corporate-action calculations into one connected workspace.</p><h2>Your numbers. Your decisions.</h2><p>Enter your position once and choose where to reuse it. Explore scenarios, compare outcomes and save calculations in this browser without creating an account.</p><p>EquiCalc calculates. The investor decides. It does not provide buy, sell or hold recommendations, predictions or investment advice.</p><h2>Simple by design.</h2><p>Prices are entered manually. There is no live market-data feed, account, backend or cloud sync in V1. Saved calculations and preferences use browser storage. Clear them at any time in Settings.</p><p>Future versions may introduce market data, portfolios and research. Today, the focus is clear mathematical tools.</p><a class="btn primary" routerLink="/calculators">Find your calculator <eq-icon name="arrow" /></a></article> }
- @case ('disclaimer') { <header class="page-header"><div class="eyebrow">KNOW WHAT YOUR NUMBERS MEAN</div><h1>Calculations, with context.</h1><p>Important information about using EquiCalc.</p></header><article class="panel prose"><h2>Mathematical tools only</h2><p>EquiCalc provides mathematical and informational tools only. It does not provide investment advice, securities recommendations, or predictions.</p><h2>Your inputs determine the results</h2><p>Results depend on the information entered by the user and should be independently verified where financial decisions depend on them. Prices are entered manually and may not represent current market prices.</p><h2>Assumptions and exclusions</h2><p>Taxes, brokerage charges, corporate-action rules and regulations may change. Charges are included only where a calculator explicitly accepts them. Growth projections assume constant returns and exclude inflation, fees and taxes.</p><p>Corporate-action calculations are theoretical. Eligibility, fractional entitlements, allotment terms and tax cost basis may differ. Position sizing models a long position without leverage; stop-loss execution is not guaranteed.</p><h2>Browser-local storage</h2><p>Saved calculations stay in the browser where they were created. Clearing browser data or using private browsing may remove them. There is no account recovery or cloud backup.</p><a class="btn" routerLink="/">Back to workspace <eq-icon name="arrow" /></a></article> }
- @default { <section class="panel empty-state not-found"><span class="eyebrow">404 · OUTSIDE THE FORMULA</span><span class="icon-tile"><eq-icon name="calculator" /></span><h1>Looks like this calculation<br>doesn’t exist.</h1><p>The page may have moved, or the address may be incomplete. Let’s get you back to your numbers.</p><div><a class="btn primary" routerLink="/">Go home</a><a class="btn" routerLink="/calculators">Browse calculators</a></div></section> }
- }`,
- styles: `.prose { max-width: 840px; padding: 35px; }.prose h2 { font-size: 18px; margin: 28px 0 12px; }.prose h2:first-child { margin-top: 0; }.prose p { font-size: 13px; line-height: 1.9; }.prose .btn { margin-top: 10px; }.not-found { padding: 70px 20px; }.not-found .eyebrow { justify-content: center; }.not-found>div { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }@media(max-width: 600px) { .prose { padding: 23px; } }`
+@Component({
+  selector: 'eq-information',
+  imports: [RouterLink, Icon],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `@switch (page) {
+    @case ('about') {
+      <header class="page-header">
+        <div class="eyebrow">A LITTLE CLARITY GOES A LONG WAY</div>
+        <h1>Smarter calculations.<br />Clearer investing decisions.</h1>
+        <p>Meet EquiCalc, your investor calculation workspace.</p>
+      </header>
+      <article class="panel prose">
+        <h2>Built to make the math easier.</h2>
+        <p>
+          EquiCalc is a collection of investor-focused mathematical tools
+          designed to make common investment calculations fast and
+          understandable. It brings averages, returns, recovery, risk and
+          corporate-action calculations into one connected workspace.
+        </p>
+        <h2>Your numbers. Your decisions.</h2>
+        <p>
+          Enter your position once and choose where to reuse it. Explore
+          scenarios, compare outcomes and save calculations in this browser
+          without creating an account.
+        </p>
+        <p>
+          EquiCalc calculates. The investor decides. It does not provide buy,
+          sell or hold recommendations, predictions or investment advice.
+        </p>
+        <h2>Simple by design.</h2>
+        <p>
+          Prices are entered manually. There is no live market-data feed,
+          account, backend or cloud sync in V1. Saved calculations and
+          preferences use browser storage. Clear them at any time in Settings.
+        </p>
+        <p>
+          Future versions may introduce market data, portfolios and research.
+          Today, the focus is clear mathematical tools.
+        </p>
+        <a class="btn primary" routerLink="/calculators"
+          >Find your calculator <eq-icon name="arrow"
+        /></a>
+      </article>
+    }
+    @case ('disclaimer') {
+      <header class="page-header">
+        <div class="eyebrow">KNOW WHAT YOUR NUMBERS MEAN</div>
+        <h1>Calculations, with context.</h1>
+        <p>Important information about using EquiCalc.</p>
+      </header>
+      <article class="panel prose">
+        <h2>Mathematical tools only</h2>
+        <p>
+          EquiCalc provides mathematical and informational tools only. It does
+          not provide investment advice, securities recommendations, or
+          predictions.
+        </p>
+        <h2>Your inputs determine the results</h2>
+        <p>
+          Results depend on the information entered by the user and should be
+          independently verified where financial decisions depend on them.
+          Prices are entered manually and may not represent current market
+          prices.
+        </p>
+        <h2>Assumptions and exclusions</h2>
+        <p>
+          Taxes, brokerage charges, corporate-action rules and regulations may
+          change. Charges are included only where a calculator explicitly
+          accepts them. Growth projections assume constant returns and exclude
+          inflation, fees and taxes.
+        </p>
+        <p>
+          Corporate-action calculations are theoretical. Eligibility, fractional
+          entitlements, allotment terms and tax cost basis may differ. Position
+          sizing models a long position without leverage; stop-loss execution is
+          not guaranteed.
+        </p>
+        <h2>Browser-local storage</h2>
+        <p>
+          Saved calculations stay in the browser where they were created.
+          Clearing browser data or using private browsing may remove them. There
+          is no account recovery or cloud backup.
+        </p>
+        <a class="btn" routerLink="/"
+          >Back to workspace <eq-icon name="arrow"
+        /></a>
+      </article>
+    }
+    @default {
+      <section class="panel empty-state not-found">
+        <span class="eyebrow">404 · OUTSIDE THE FORMULA</span
+        ><span class="icon-tile"><eq-icon name="calculator" /></span>
+        <h1>Looks like this calculation<br />doesn’t exist.</h1>
+        <p>
+          The page may have moved, or the address may be incomplete. Let’s get
+          you back to your numbers.
+        </p>
+        <div>
+          <a class="btn primary" routerLink="/">Go home</a
+          ><a class="btn" routerLink="/calculators">Browse calculators</a>
+        </div>
+      </section>
+    }
+  }`,
+  styles: `
+    .prose {
+      max-width: 840px;
+      padding: 35px;
+    }
+    .prose h2 {
+      font-size: 18px;
+      margin: 28px 0 12px;
+    }
+    .prose h2:first-child {
+      margin-top: 0;
+    }
+    .prose p {
+      font-size: 13px;
+      line-height: 1.9;
+    }
+    .prose .btn {
+      margin-top: 10px;
+    }
+    .not-found {
+      padding: 70px 20px;
+    }
+    .not-found .eyebrow {
+      justify-content: center;
+    }
+    .not-found > div {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 600px) {
+      .prose {
+        padding: 23px;
+      }
+    }
+  `,
 })
-export class Information { readonly page = inject(ActivatedRoute).snapshot.data['page'] as string; }
+export class Information {
+  readonly page = inject(ActivatedRoute).snapshot.data['page'] as string;
+}

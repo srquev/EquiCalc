@@ -5,17 +5,20 @@ const PATHS: Readonly<Record<string, string>> = {
   'trend-down': 'm3 5 6 6 4-4 8 10M15 17h6v-6',
   'trend-up': 'm3 17 6-6 4 4 8-10M15 5h6v6',
   layers: 'm12 3 10 5-10 5L2 8Zm-9 9 9 5 9-5M3 16l9 5 9-5',
-  target: 'M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9ZM17 12a5 5 0 1 1-5-5 5 5 0 0 1 5 5ZM12 11v2',
+  target:
+    'M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9ZM17 12a5 5 0 1 1-5-5 5 5 0 0 1 5 5ZM12 11v2',
   chart: 'M4 3v18h17M8 16v-5M13 16V7M18 16v-8',
   flag: 'M5 21V3m0 1c5-3 9 3 14 0v10c-5 3-9-3-14 0',
-  coins: 'M12 3c5 0 8 2 8 4s-3 4-8 4-8-2-8-4 3-4 8-4Zm-8 4v5c0 2 3 4 8 4s8-2 8-4V7M4 12v5c0 2 3 4 8 4s8-2 8-4v-5',
+  coins:
+    'M12 3c5 0 8 2 8 4s-3 4-8 4-8-2-8-4 3-4 8-4Zm-8 4v5c0 2 3 4 8 4s8-2 8-4V7M4 12v5c0 2 3 4 8 4s8-2 8-4v-5',
   pie: 'M21 12h-9V3a9 9 0 1 0 9 9ZM16 3v5h5a8 8 0 0 0-5-5Z',
   scale: 'M12 3v18M5 21h14M4 7h16M5 7l-3 7h6Zm14 0-3 7h6Z',
   divide: 'M4 12h16M12 5v1m0 12v1',
   gift: 'M3 8h18v4H3zm2 4v9h14v-9M12 8v13M12 8C2 8 5 0 9 4Zm0 0c10 0 7-8 3-4Z',
   split: 'M12 21v-8M12 13 5 6m7 7 7-7M5 10V4h6m2 0h6v6',
   file: 'M5 3h9l5 5v13H5ZM14 3v6h5M8 13h8m-8 4h5',
-  percent: 'M5 19 19 5M8 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM22 19a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
+  percent:
+    'M5 19 19 5M8 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM22 19a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
   building: 'M4 21V7h7v14m0-18h9v18M2 21h20M7 10v1m0 4v1m8-9h1m-1 4h1m-1 4h1',
   sprout: 'M12 21V11M12 14C2 14 3 5 3 5s9-1 9 9Zm0-3C12 3 21 3 21 3s1 9-9 8Z',
   bookmark: 'M5 3h14v19l-7-4-7 4Z',
@@ -29,7 +32,8 @@ const PATHS: Readonly<Record<string, string>> = {
   check: 'm5 12 4 4L19 6',
   shield: 'm12 3 8 3v6c0 4-8 9-8 9s-8-5-8-9V6Zm-4 9 3 3 5-6',
   info: 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM12 11v6m0-10v1',
-  settings: 'M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8ZM9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1Z',
+  settings:
+    'M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8ZM9 3h6l1 3 3 1 2 5-2 5-3 1-1 3H9l-1-3-3-1-2-5 2-5 3-1Z',
   copy: 'M9 9h12v12H9ZM5 15H3V3h12v2',
   share: 'M12 16V3m-5 5 5-5 5 5M5 13H3v8h18v-8h-2',
   plus: 'M12 4v16M4 12h16',
@@ -37,8 +41,17 @@ const PATHS: Readonly<Record<string, string>> = {
   reset: 'M3 10a9 9 0 1 1 1 7M3 4v6h6',
   calculator: 'M5 2h14v20H5ZM8 5h8v4H8Zm0 8h1m3 0h1m3 0h1M8 17h1m3 0h1m3 0h1',
 };
-@Component({ selector: 'eq-icon', changeDetection: ChangeDetectionStrategy.OnPush,
-  template: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path [attr.d]="path()" /></svg>',
-  styles: ':host { display: inline-flex; width: 20px; height: 20px; flex: 0 0 auto; } svg { width: 100%; height: 100%; }'
+@Component({
+  selector: 'eq-icon',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path [attr.d]="path()" /></svg>',
+  styles:
+    ':host { display: inline-flex; width: 20px; height: 20px; flex: 0 0 auto; } svg { width: 100%; height: 100%; }',
 })
-export class Icon { readonly name = input('calculator'); path(): string { return PATHS[this.name()] ?? PATHS['calculator']; } }
+export class Icon {
+  readonly name = input('calculator');
+  path(): string {
+    return PATHS[this.name()] ?? PATHS['calculator'];
+  }
+}
