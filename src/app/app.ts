@@ -1,12 +1,4 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-
-@Component({
-  selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
-})
-export class App {
-  protected readonly title = signal('EquiCalc');
-}
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { AppShell } from './layout/app-shell';
+@Component({ selector: 'app-root', imports: [AppShell], template: '<eq-app-shell />', changeDetection: ChangeDetectionStrategy.OnPush })
+export class App {}

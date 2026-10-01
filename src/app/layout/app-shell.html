@@ -1,0 +1,22 @@
+<a class="skip-link" href="#main-content">Skip to content</a>
+<aside class="sidebar" aria-label="Main navigation">
+  <a class="brand" routerLink="/" aria-label="EquiCalc home"><span class="brand-mark"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M8 9h16M8 16h10M8 23h16M22 13v7m-3-3h6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" /></svg></span><span>EquiCalc<span class="brand-dot">.</span></span></a>
+  <div class="workspace-label">YOUR INVESTING WORKSPACE</div>
+  <nav class="sidebar-scroll">
+    <a class="nav-item overview" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" ariaCurrentWhenActive="page"><eq-icon name="grid" /><span>Overview</span></a>
+    @for (group of groups; track group.title) {
+      <div class="nav-label">{{ group.title }}</div>
+      @for (calculator of group.calculators; track calculator.id) { <a class="nav-item" [routerLink]="calculator.route" routerLinkActive="active" ariaCurrentWhenActive="page"><eq-icon [name]="calculator.icon" /><span>{{ calculator.shortTitle }}</span>@if (calculator.id === 'average-down') { <span class="nav-dot"></span> }</a> }
+    }
+    <div class="nav-label">MY TOOLS</div>
+    <a class="nav-item" routerLink="/saved" routerLinkActive="active" ariaCurrentWhenActive="page"><eq-icon name="bookmark" />Saved calculations</a>
+    <a class="nav-item" routerLink="/history" routerLinkActive="active" ariaCurrentWhenActive="page"><eq-icon name="history" />History</a>
+  </nav>
+  <div class="sidebar-bottom"><button class="nav-item" (click)="theme.toggle()"><eq-icon [name]="theme.dark() ? 'sun' : 'moon'" /><span>{{ theme.dark() ? 'Light' : 'Dark' }} appearance</span></button><div class="sidebar-links"><a routerLink="/about">About</a><a routerLink="/disclaimer">Disclaimer</a><a routerLink="/settings" aria-label="Settings"><eq-icon name="settings" /></a></div></div>
+</aside>
+<div class="app-body">
+  <header class="topbar"><a class="mobile-brand brand" routerLink="/"><span class="brand-mark">E</span>EquiCalc<span class="brand-dot">.</span></a><span class="desktop-context">Your workspace <span>/</span> <strong>Make the numbers clear.</strong></span><div class="topbar-actions"><span class="local-badge"><span></span> Local & account-free</span><a class="icon-button" routerLink="/calculators" aria-label="Search calculators"><eq-icon name="search" /></a><button class="icon-button" (click)="theme.toggle()" [attr.aria-label]="theme.dark() ? 'Switch to light theme' : 'Switch to dark theme'"><eq-icon [name]="theme.dark() ? 'sun' : 'moon'" /></button><a class="icon-button" routerLink="/settings" aria-label="Settings"><eq-icon name="settings" /></a></div></header>
+  <main id="main-content" tabindex="-1">@if (storage.warning()) { <p class="storage-warning" role="status">{{ storage.warning() }}</p> }<router-outlet /></main>
+  <footer class="app-footer"><span>EquiCalc calculates. You decide.</span><span>Mathematical tools, not investment advice. <a routerLink="/disclaimer">Read disclaimer <span aria-hidden="true">↗</span></a></span><div class="mobile-footer-links"><a routerLink="/about">About</a><a routerLink="/settings">Settings</a></div></footer>
+</div>
+<nav class="mobile-nav" aria-label="Mobile navigation"><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" ariaCurrentWhenActive="page"><eq-icon name="home" />Home</a><a routerLink="/calculators" routerLinkActive="active" ariaCurrentWhenActive="page"><eq-icon name="calculator" />Calculate</a><a routerLink="/saved" routerLinkActive="active" ariaCurrentWhenActive="page"><eq-icon name="bookmark" />Saved</a><a routerLink="/history" routerLinkActive="active" ariaCurrentWhenActive="page"><eq-icon name="history" />History</a></nav>
